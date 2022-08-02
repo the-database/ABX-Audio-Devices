@@ -20,14 +20,19 @@ namespace ABX_Audio_Devices
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ISoundOut? _soundOut = null;
-        private IWaveSource? _waveSource = null;
 
-        public event EventHandler<PlaybackStoppedEventArgs>? PlaybackStopped;
+        private readonly MusicPlayer _musicPlayerA = new MusicPlayer();
+        private readonly MusicPlayer _musicPlayerB = new MusicPlayer();
 
         public MainWindow()
         {
             InitializeComponent();
+
+            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+            dispatcherTimer.Tick += dispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+            dispatcherTimer.Start();
+
             RefreshAudioDevices(lstAudioDevicesA);
             RefreshAudioDevices(lstAudioDevicesB);
 
@@ -45,14 +50,10 @@ namespace ABX_Audio_Devices
             UpdateButtons();
         }
 
-        public PlaybackState PlaybackState
+        private void dispatcherTimer_Tick(object? sender, EventArgs e)
         {
-            get
-            {
-                if (_soundOut != null)
-                    return _soundOut.PlaybackState;
-                return PlaybackState.Stopped;
-            }
+            lblPlayADebug.Content = _musicPlayerA._tryPlay + " " + _musicPlayerA.PlaybackState;
+            lblPlayBDebug.Content = _musicPlayerB._tryPlay + " " + _musicPlayerB.PlaybackState;
         }
 
         private void btnRefresh_Click(object sender, RoutedEventArgs e)
@@ -66,10 +67,11 @@ namespace ABX_Audio_Devices
         private void btnPlayA_Click(object sender, RoutedEventArgs e)
         {
             lblPlayAStatus.Content = "";
+            lblPlayBStatus.Content = "";
 
             try
             {
-                PlayClick(lstAudioDevicesA, lstInputsA);
+                PlayClick(lstAudioDevicesA, lstInputsA, _musicPlayerA);
             } 
             catch (Exception ex)
             {
@@ -78,11 +80,12 @@ namespace ABX_Audio_Devices
         }
         private void btnPlayB_Click(object sender, RoutedEventArgs e)
         {
+            lblPlayAStatus.Content = "";
             lblPlayBStatus.Content = "";
 
             try
             {
-                PlayClick(lstAudioDevicesB, lstInputsB);
+                PlayClick(lstAudioDevicesB, lstInputsB, _musicPlayerB);
             } 
             catch (Exception ex)
             {
@@ -92,7 +95,8 @@ namespace ABX_Audio_Devices
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
-            Stop();
+            _musicPlayerA.Stop();
+            _musicPlayerB.Stop();
             UpdateButtons();
         }
 
@@ -110,8 +114,10 @@ namespace ABX_Audio_Devices
             UpdateButtons();
         }
 
-        private void PlayClick(ComboBox devices, ComboBox inputs)
+        private void PlayClick(ComboBox devices, ComboBox inputs, MusicPlayer musicPlayer)
         {
+            _musicPlayerA.Stop();
+            _musicPlayerB.Stop();
             SetInput(((InputListItem)inputs.SelectedItem).InputCode);
 
             using (var enumerator = new MMDeviceEnumerator())
@@ -122,8 +128,8 @@ namespace ABX_Audio_Devices
                 {
                     if (device.DeviceID == ((AudioDeviceListItem)devices.SelectedItem).DeviceId)
                     {
-                        Open(txtAudioFilePath.Text, device);
-                        Play();
+                        musicPlayer.Open(txtAudioFilePath.Text, device);
+                        musicPlayer.Play();
                         break;
                     }
 
@@ -132,51 +138,6 @@ namespace ABX_Audio_Devices
             }
 
             UpdateButtons();
-        }
-
-        public void Open(string filename, MMDevice device)
-        {
-            CleanupPlayback();
-
-            _waveSource =
-                CodecFactory.Instance.GetCodec(filename);
-            _soundOut = new WasapiOut(true, AudioClientShareMode.Exclusive, 100) { Device = device };
-            _soundOut.Initialize(_waveSource);
-            if (PlaybackStopped != null) _soundOut.Stopped += PlaybackStopped;
-        }
-
-        public void Play()
-        {
-            if (_soundOut != null)
-                _soundOut.Play();
-        }
-
-        public void Pause()
-        {
-            if (_soundOut != null)
-                _soundOut.Pause();
-        }
-
-        public void Stop()
-        {
-            if (_soundOut != null)
-                _soundOut.Stop();
-
-            CleanupPlayback();
-        }
-
-        private void CleanupPlayback()
-        {
-            if (_soundOut != null)
-            {
-                _soundOut.Dispose();
-                _soundOut = null;
-            }
-            if (_waveSource != null)
-            {
-                _waveSource.Dispose();
-                _waveSource = null;
-            }
         }
 
         private void RefreshAudioDevices(ComboBox lstAudioDevices)

@@ -81,6 +81,7 @@
                 </StackPanel>
 
                 <Label x:Name="lblPlayAStatus"> </Label>
+                <Label x:Name="lblPlayADebug"></Label>
 
                 <Button x:Name="btnPlayA" Margin="0,5,0,0" Click="btnPlayA_Click">Test Play A</Button>
                 <Button x:Name="btnStopA" Margin="0,5,0,0" Click="btnStop_Click">Stop A</Button>
@@ -99,6 +100,7 @@
                 </StackPanel>
 
                 <Label x:Name="lblPlayBStatus"> </Label>
+                <Label x:Name="lblPlayBDebug"></Label>
 
                 <Button x:Name="btnPlayB" Margin="0,5,0,0" Click="btnPlayB_Click">Test Play B</Button>
                 <Button x:Name="btnStopB" Margin="0,5,0,0" Click="btnStop_Click">Stop B</Button>
