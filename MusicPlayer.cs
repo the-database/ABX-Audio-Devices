@@ -20,23 +20,6 @@ namespace ABX_Audio_Devices
 
         public bool _tryPlay = false;
 
-        public MusicPlayer()
-        {
-            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            dispatcherTimer.Tick += dispatcherTimer_Tick;
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
-            dispatcherTimer.Start();
-        }
-
-        private void dispatcherTimer_Tick(object? sender, EventArgs e)
-        {
-            // code goes here
-            if (_tryPlay && PlaybackState == PlaybackState.Stopped) 
-            {
-                Play();
-            }
-        }
-
         public PlaybackState PlaybackState
         {
             get

@@ -54,6 +54,14 @@ namespace ABX_Audio_Devices
         {
             lblPlayADebug.Content = _musicPlayerA._tryPlay + " " + _musicPlayerA.PlaybackState;
             lblPlayBDebug.Content = _musicPlayerB._tryPlay + " " + _musicPlayerB.PlaybackState;
+
+            
+            if (_musicPlayerA._tryPlay && _musicPlayerA.PlaybackState == PlaybackState.Stopped)
+            {
+                PlayClick(lstAudioDevicesA, lstInputsA, _musicPlayerA);
+            } else if (_musicPlayerB._tryPlay && _musicPlayerB.PlaybackState == PlaybackState.Stopped) {
+                PlayClick(lstAudioDevicesB, lstInputsB, _musicPlayerB);
+            }
         }
 
         private void btnRefresh_Click(object sender, RoutedEventArgs e)
